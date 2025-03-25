@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Budget</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Set Your Budget</h2>
+        <input type="number" id="budget-amount" placeholder="Enter your budget amount" />
+        <button onclick="saveBudget()">Save Budget</button>
+        <p id="confirmation" style="color: green;"></p>
+        <br>
+        <a href="tracker.html">Go to Tracker</a>
+    </div>
+
+    <script>
+        function saveBudget() {
+            const budget = parseFloat(document.getElementById("budget-amount").value);
+            if (!budget || budget <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+            localStorage.setItem("userBudget", budget);
+            document.getElementById("confirmation").textContent = `Budget set to $${budget.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
