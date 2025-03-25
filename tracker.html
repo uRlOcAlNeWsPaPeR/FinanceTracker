@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget Tracker</title>
+    <title>Finance Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-        h2 {
+        h2, h3 {
             color: #333;
         }
         input, button {
@@ -49,33 +49,90 @@
             padding: 10px;
             border-radius: 5px;
         }
+        #warning {
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
+<a href="index.html" style="display: inline-block; padding: 10px 20px; background-color: #008CBA; color: white; text-decoration: none; border-radius: 5px;">Back to Home</a>
 <body>
     <div class="container">
         <h2>Budget Tracker</h2>
-        <input type="number" id="amount" placeholder="Enter amount" />
-        <input type="text" id="category" placeholder="Enter category" />
+        <input type="number" id="amount" placeholder="Enter amount (Ex. 100)" />
+        <input type="text" id="category" placeholder="Category (Ex. Food, Clothing)" />
         <button onclick="addTransaction()">Add Transaction</button>
+        <button onclick="clearData()" style="background-color: red;">Clear Data</button>
         
         <h3>Transactions</h3>
         <ul id="transaction-list"></ul>
+        <h3>Total: $<span id="total">0.00</span></h3>
+        <p id="warning"></p>
+        <br>
+        <a href="budget.html">Change Spending Limit</a>
+        <br><br>
+       
     </div>
 
     <script>
+        let transactions = JSON.parse(localStorage.getItem("transactions")) || {};
+        let duplicateCount = 1;
+        let totalAmount = 0;
+        let spendingLimit = localStorage.getItem("userBudget") ? parseFloat(localStorage.getItem("userBudget")) : 300;
+
         function addTransaction() {
-            const amount = document.getElementById("amount").value;
-            const category = document.getElementById("category").value;
+            const amount = parseFloat(document.getElementById("amount").value);
+            let category = document.getElementById("category").value.trim();
             if (!amount || !category) return;
             
-            const list = document.getElementById("transaction-list");
-            const item = document.createElement("li");
-            item.textContent = `${category}: $${parseFloat(amount).toFixed(2)}`;
-            list.appendChild(item);
+            if (transactions[category] !== undefined) {
+                const addToExisting = confirm(`The category '${category}' already exists. Do you want to add to the existing amount?`);
+                if (addToExisting) {
+                    transactions[category] += amount;
+                } else {
+                    category = `${category} (#${duplicateCount++})`;
+                    transactions[category] = amount;
+                }
+            } else {
+                transactions[category] = amount;
+            }
             
+            localStorage.setItem("transactions", JSON.stringify(transactions));
+            updateTransactionList();
             document.getElementById("amount").value = "";
             document.getElementById("category").value = "";
         }
+
+        function updateTransactionList() {
+            const list = document.getElementById("transaction-list");
+            list.innerHTML = "";
+            totalAmount = 0;
+            for (const [category, amount] of Object.entries(transactions)) {
+                const item = document.createElement("li");
+                item.textContent = `${category}: $${amount.toFixed(2)}`;
+                list.appendChild(item);
+                totalAmount += amount;
+            }
+            document.getElementById("total").textContent = totalAmount.toFixed(2);
+            checkWarning();
+        }
+
+        function checkWarning() {
+            const warningText = document.getElementById("warning");
+            if (totalAmount > spendingLimit) {
+                warningText.textContent = `Warning: Total spending exceeds $${spendingLimit}!`;
+            } else {
+                warningText.textContent = "";
+            }
+        }
+
+        function clearData() {
+            localStorage.removeItem("transactions");
+            transactions = {};
+            updateTransactionList();
+        }
+
+        updateTransactionList();
     </script>
 </body>
 </html>
